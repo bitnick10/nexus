@@ -1,13 +1,14 @@
 ﻿package main
 
 import (
+	"../../nexus"
 	"bytes"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"strings"
-	"net/url"
 )
 
 func main() {
@@ -26,7 +27,7 @@ func server() {
 	})
 	http.HandleFunc("/command", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		request,_ := url.QueryUnescape(r.URL.RequestURI())
+		request, _ := url.QueryUnescape(r.URL.RequestURI())
 		fmt.Println("someone request " + request)
 		name := r.URL.Query().Get("name")
 		arg := r.URL.Query().Get("arg")
@@ -47,6 +48,14 @@ func server() {
 		fmt.Println("command finished.")
 		fmt.Fprintf(w, "%s", out.String())
 	})
+	http.HandleFunc("/ReadDir", func(w http.ResponseWriter, r *http.Request) {
+		SetAccessControlAllowOriginAndPrintRequest(w, r)
+		nexus.ReadDir(w, r)
+	})
+	http.HandleFunc("/Select1", func(w http.ResponseWriter, r *http.Request) {
+		SetAccessControlAllowOriginAndPrintRequest(w, r)
+		nexus.Select1(w, r)
+	})
 	http.HandleFunc("/exit", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		fmt.Println("someone request exit")
@@ -55,9 +64,14 @@ func server() {
 	http.HandleFunc("/web/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, r.URL.Path[1:])
 	})
+	http.HandleFunc("/file", func(w http.ResponseWriter, r *http.Request) {
+		SetAccessControlAllowOriginAndPrintRequest(w, r)
+		path := r.URL.Query().Get("path")
+		http.ServeFile(w, r, path)
+	})
 	port := ":17000"
 	s := &http.Server{
-		Addr: "127.0.0.1" + port,
+		Addr: "" + port,
 	}
 	fmt.Println("server at " + s.Addr)
 	err := s.ListenAndServe()
@@ -65,6 +79,11 @@ func server() {
 	if err != nil {
 		fmt.Println(fmt.Sprintf("ListenAndServe: ", err))
 	}
+}
+func SetAccessControlAllowOriginAndPrintRequest(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	request, _ := url.QueryUnescape(r.URL.RequestURI())
+	fmt.Println("someone request " + request)
 }
 func cocos(name string) string {
 	path := "D:\\cocos2d-x-3.4\\tools\\cocos2d-console\\bin\\cocos"
