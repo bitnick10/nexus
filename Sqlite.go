@@ -9,22 +9,28 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"net/http"
 	"os"
+	"sync"
 	// "strings"
 	// "strconv"
 )
 
 var cache map[string]string // := make(map[string]string)
+var lock = sync.RWMutex{}
+
 func init() {
 	cache = make(map[string]string)
 }
 func Select(w http.ResponseWriter, r *http.Request) (string, error) {
 	dbname := r.URL.Query().Get("dbname")
 	query := r.URL.Query().Get("query")
+	lock.RLock()
 	if v, ok := cache[r.URL.String()]; ok {
 		fmt.Fprintf(w, "%s", v)
 		fmt.Println("cache")
+		lock.RUnlock()
 		return "", nil
 	}
+	lock.RUnlock()
 	if _, err := os.Stat(dbname); os.IsNotExist(err) {
 		// database does not exist
 		fmt.Println(dbname + " database does not exist")
@@ -77,7 +83,9 @@ func Select(w http.ResponseWriter, r *http.Request) (string, error) {
 		return "", err
 	}
 	// fmt.Println(string(jsonData))
+	lock.Lock()
 	cache[r.URL.String()] = string(jsonData)
+	lock.Unlock()
 	fmt.Fprintf(w, "%s", string(jsonData))
 	return string(jsonData), nil
 }

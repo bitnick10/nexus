@@ -52,9 +52,17 @@ func server() {
 		SetAccessControlAllowOriginAndPrintRequest(w, r)
 		nexus.ReadDir(w, r)
 	})
+	http.HandleFunc("/Select", func(w http.ResponseWriter, r *http.Request) {
+		SetAccessControlAllowOriginAndPrintRequest(w, r)
+		nexus.Select(w, r)
+	})
 	http.HandleFunc("/Select1", func(w http.ResponseWriter, r *http.Request) {
 		SetAccessControlAllowOriginAndPrintRequest(w, r)
 		nexus.Select1(w, r)
+	})
+	http.HandleFunc("/Select7", func(w http.ResponseWriter, r *http.Request) {
+		SetAccessControlAllowOriginAndPrintRequest(w, r)
+		nexus.Select7(w, r)
 	})
 	http.HandleFunc("/exit", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
