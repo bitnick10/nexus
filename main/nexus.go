@@ -21,9 +21,19 @@ func server() {
 	http.HandleFunc("/greeting", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		fmt.Println(r.URL)
+		fmt.Println(r.Method)
+		//fmt.Println(r.Body)
+		//buf := new(bytes.Buffer)
+		//buf.ReadFrom(r.Body)
+		//s := buf.String()
+		//fmt.Println(s)
 		str := r.URL.Query().Get("content")
 		fmt.Println(str)
 		fmt.Fprintf(w, "%s", str+" too")
+	})
+	http.HandleFunc("/map", func(w http.ResponseWriter, r *http.Request) {
+		SetAccessControlAllowOriginAndPrintRequest(w, r)
+		nexus.Map(w, r)
 	})
 	http.HandleFunc("/command", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -91,7 +101,7 @@ func server() {
 func SetAccessControlAllowOriginAndPrintRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	request, _ := url.QueryUnescape(r.URL.RequestURI())
-	fmt.Println("someone request " + request)
+	fmt.Println("someone request " + r.Method + " " + request)
 }
 func cocos(name string) string {
 	path := "D:\\cocos2d-x-3.4\\tools\\cocos2d-console\\bin\\cocos"

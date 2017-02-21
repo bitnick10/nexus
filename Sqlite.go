@@ -3,6 +3,7 @@ package nexus
 // cygwin go-sqlite3 build gcc http://tdm-gcc.tdragon.net/
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -16,9 +17,27 @@ import (
 
 var cache map[string]string // := make(map[string]string)
 var lock = sync.RWMutex{}
+var neuxsMap map[string]string
 
 func init() {
 	cache = make(map[string]string)
+	neuxsMap = make(map[string]string)
+}
+func Map(w http.ResponseWriter, r *http.Request) {
+	key := r.URL.Query().Get("key")
+	if r.Method == "POST" {
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(r.Body)
+		neuxsMap[key] = buf.String()
+		return
+	}
+	if r.Method == "GET" {
+		if v, ok := neuxsMap[key]; ok {
+			fmt.Fprintf(w, "%s", v)
+		} else {
+			fmt.Fprintf(w, "%s", "")
+		}
+	}
 }
 func Select(w http.ResponseWriter, r *http.Request) (string, error) {
 	dbname := r.URL.Query().Get("dbname")
