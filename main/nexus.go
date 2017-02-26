@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -18,6 +19,11 @@ func main() {
 	fmt.Println("server closed")
 }
 func server() {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, r.URL.Path[1:])
+		//SetAccessControlAllowOriginAndPrintRequest(w, r)
+	})
+	//http.Handle("/", http.FileServer(http.Dir("./index.html")))
 	http.HandleFunc("/greeting", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		fmt.Println(r.URL)
@@ -30,6 +36,10 @@ func server() {
 		str := r.URL.Query().Get("content")
 		fmt.Println(str)
 		fmt.Fprintf(w, "%s", str+" too")
+	})
+	http.HandleFunc("/list", func(w http.ResponseWriter, r *http.Request) {
+		SetAccessControlAllowOriginAndPrintRequest(w, r)
+		nexus.List(w, r)
 	})
 	http.HandleFunc("/map", func(w http.ResponseWriter, r *http.Request) {
 		SetAccessControlAllowOriginAndPrintRequest(w, r)
@@ -62,18 +72,10 @@ func server() {
 		SetAccessControlAllowOriginAndPrintRequest(w, r)
 		nexus.ReadDir(w, r)
 	})
-	http.HandleFunc("/Select", func(w http.ResponseWriter, r *http.Request) {
-		SetAccessControlAllowOriginAndPrintRequest(w, r)
-		nexus.Select(w, r)
-	})
-	http.HandleFunc("/Select1", func(w http.ResponseWriter, r *http.Request) {
-		SetAccessControlAllowOriginAndPrintRequest(w, r)
-		nexus.Select1(w, r)
-	})
-	http.HandleFunc("/Select7", func(w http.ResponseWriter, r *http.Request) {
-		SetAccessControlAllowOriginAndPrintRequest(w, r)
-		nexus.Select7(w, r)
-	})
+	// http.HandleFunc("/Select", func(w http.ResponseWriter, r *http.Request) {
+	// 	SetAccessControlAllowOriginAndPrintRequest(w, r)
+	// 	nexus.Select(w, r)
+	// })
 	http.HandleFunc("/exit", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		fmt.Println("someone request exit")
@@ -87,7 +89,7 @@ func server() {
 		path := r.URL.Query().Get("path")
 		http.ServeFile(w, r, path)
 	})
-	port := ":17000"
+	port := ":80"
 	s := &http.Server{
 		Addr: "" + port,
 	}
@@ -101,7 +103,8 @@ func server() {
 func SetAccessControlAllowOriginAndPrintRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	request, _ := url.QueryUnescape(r.URL.RequestURI())
-	fmt.Println("someone request " + r.Method + " " + request)
+	t := time.Now()
+	fmt.Println("[" + t.Format("15:04:05") + "] someone request " + r.Method + " " + request)
 }
 func cocos(name string) string {
 	path := "D:\\cocos2d-x-3.4\\tools\\cocos2d-console\\bin\\cocos"
