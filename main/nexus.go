@@ -13,6 +13,9 @@ import (
 )
 
 func main() {
+	// nexus.ConnectRedis()
+	defer nexus.CloseRedisPool()
+
 	go server()
 	var input string
 	fmt.Scanln(&input)
@@ -36,6 +39,14 @@ func server() {
 		str := r.URL.Query().Get("content")
 		fmt.Println(str)
 		fmt.Fprintf(w, "%s", str+" too")
+	})
+	http.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
+		SetAccessControlAllowOriginAndPrintRequest(w, r)
+		fmt.Fprintf(w, "%s", "hi")
+	})
+	http.HandleFunc("/hi/hi", func(w http.ResponseWriter, r *http.Request) {
+		SetAccessControlAllowOriginAndPrintRequest(w, r)
+		fmt.Fprintf(w, "%s", "hi/hi")
 	})
 	http.HandleFunc("/list", func(w http.ResponseWriter, r *http.Request) {
 		SetAccessControlAllowOriginAndPrintRequest(w, r)
@@ -76,6 +87,18 @@ func server() {
 	// 	SetAccessControlAllowOriginAndPrintRequest(w, r)
 	// 	nexus.Select(w, r)
 	// })
+	http.HandleFunc("/Redis", func(w http.ResponseWriter, r *http.Request) {
+		SetAccessControlAllowOriginAndPrintRequest(w, r)
+		nexus.Redis(w, r)
+	})
+	http.HandleFunc("/Postgres/Select", func(w http.ResponseWriter, r *http.Request) {
+		SetAccessControlAllowOriginAndPrintRequest(w, r)
+		nexus.PostgresSelect(w, r)
+	})
+	http.HandleFunc("/MySQL/Select", func(w http.ResponseWriter, r *http.Request) {
+		SetAccessControlAllowOriginAndPrintRequest(w, r)
+		nexus.MySQLSelect(w, r)
+	})
 	http.HandleFunc("/exit", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		fmt.Println("someone request exit")
@@ -89,7 +112,7 @@ func server() {
 		path := r.URL.Query().Get("path")
 		http.ServeFile(w, r, path)
 	})
-	port := ":80"
+	port := ":17000"
 	s := &http.Server{
 		Addr: "" + port,
 	}
